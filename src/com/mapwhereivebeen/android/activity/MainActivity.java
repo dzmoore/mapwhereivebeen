@@ -17,7 +17,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.mapwhereivebeen.android.R;
-import com.mapwhereivebeen.android.util.Utils;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getName();
@@ -36,35 +35,37 @@ public class MainActivity extends Activity {
 
 		final View contentView = findViewById(R.id.fullscreen_content);
 
-		contentView
-				.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-					@Override
-					public void onCreateContextMenu(final ContextMenu menu,
-                        final View v, final ContextMenuInfo menuInfo) {
-
-					}
-				});
-
-		contentView.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(final View v, final MotionEvent event) {
-				switch (event.getAction()) {
-                    case MotionEvent.ACTION_OUTSIDE:
-                    	final PointF defaultP = new PointF(100,100);
-                    	atmLastTouchPoint.set(defaultP);
-                    	break;
-                    default:
-                    	final PointF p = new PointF(event.getX(), event.getY());
-                    	atmLastTouchPoint.set(p);
-				}
-				
-//				Log.d(TAG, "atmLastTouchPoint: " + String.valueOf(atmLastTouchPoint));
-				
-				return  false;
-			}
-		});
-
 		if (contentView instanceof WebView) {
+            contentView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+                @Override
+                public void onCreateContextMenu(
+                    final ContextMenu menu,
+                    final View v, 
+                    final ContextMenuInfo menuInfo) 
+                {
+                	((WebView)contentView).loadUrl("javascript:print_out('success !" + String.valueOf(System.nanoTime()) + "')");
+                }
+            });
+
+            contentView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(final View v, final MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_OUTSIDE:
+                            final PointF defaultP = new PointF(100,100);
+                            atmLastTouchPoint.set(defaultP);
+                            break;
+                        default:
+                            final PointF p = new PointF(event.getX(), event.getY());
+                            atmLastTouchPoint.set(p);
+                    }
+                    
+    				Log.v(TAG, "atmLastTouchPoint: " + String.valueOf(atmLastTouchPoint));
+    				
+                    return false;
+                }
+            });
+
 			final WebView contentWebview = (WebView) contentView;
 			final WebSettings webSettings = contentWebview.getSettings();
 			webSettings.setJavaScriptEnabled(true);
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
 		}
 
 	}
-
+	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
