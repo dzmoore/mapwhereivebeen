@@ -95,7 +95,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private void sendSetMarkerCenter(final WebView contentWebview) {
-		contentWebview.loadUrl("javascript:setMarkerCenter()");
+		contentWebview.loadUrl("javascript:androidSetMarkerCenter()");
 	}
 
 	public class MainActivityJavascriptInterface {

@@ -22,12 +22,16 @@
 <div id="crosshairs" class='center-40x40'><img src="../img/crosshairs.png"></img></div> 
 
 <script type="text/javascript">
-    var enableAndroid = false;
+    var enableAndroid = true;
     
     var m = new Main('map', 'dzmoore.hh7ibp3a', L.latLng(40, -74.50), 9, enableAndroid);
     
     if (enableAndroid) {
-        $('#output').hide();
+/*         $('#output').hide(); */
+        $('#output').click(function() {
+            androidSetMarkerCenter();
+            $('#p-output').text('set marker to: ' + m.currentCenter);
+        });
         
     } else {    
         $('#output').click(function() {
@@ -41,6 +45,7 @@
     
     function androidSetMarkerCenter() {
         m.setMarkerCenter();
+        $('#p-output').text('set marker to: ' + m.currentCenter);
     }
 </script>
 
