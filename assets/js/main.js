@@ -14,24 +14,45 @@ Main.prototype.init = function() {
     this.map.setView(this.latLngCenter, this.zoom);
     
     thar = this;
-    theMap = this.map;
     this.map.on('mousedown', function(e) {
-    	thar.currentCenter = theMap.getCenter();
-    	
     	thar.updateCenterAndroid();
     });
 } 
 
 Main.prototype.updateCenterAndroid = function() {
+    this.currentCenter = this.map.getCenter();
+    
 	if (this.enableAndroid) {
         MainActivityJavascriptInterface.updateCenter(this.currentCenter.lat, this.currentCenter.lng);
+        
 	} else {
 		print_out('current loc: ' + this.currentCenter);
 	}
 }
 
 Main.prototype.setMarkerCenter = function() {
-	L.marker(this.currentCenter).addTo(this.map);
+	thar = this;
+	this.updateCenterAndroid();
+	
+	L.mapbox.featureLayer({
+	    // this feature is in the GeoJSON format: see geojson.org
+	    // for the full specification
+	    type: 'Feature',
+	    geometry: {
+	        type: 'Point',
+	        // coordinates here are in longitude, latitude order because
+	        // x, y is the standard for GeoJSON and many formats
+	        coordinates: [thar.currentCenter.lng, thar.currentCenter.lat]
+	    },
+	    properties: {
+	        title: 'marker',
+	        description: 'description',
+	        // one can customize markers by adding simplestyle properties
+	        // http://mapbox.com/developers/simplestyle/
+	        'marker-size': 'large',
+	        'marker-color': '#f0a'
+	    }
+	}).addTo(this.map);
 }
 
 function print_out(txt) {
