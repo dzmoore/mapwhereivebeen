@@ -4,5 +4,6 @@
     <string name="app_name">mapwhereivebeen</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="btn_txt_marker">I\'ve Been Here</string>
 
 </resources>

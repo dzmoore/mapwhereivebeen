@@ -15,6 +15,8 @@ import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.mapwhereivebeen.android.R;
 
@@ -65,13 +67,24 @@ public class MainActivity extends Activity {
                     return false;
                 }
             });
+            
+            final WebView contentWebview = (WebView) contentView;
+            
+            final Button btnMarker = (Button) findViewById(R.id.btn_marker);
+            btnMarker.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(final View v) {
+					sendSetMarkerCenter(contentWebview);
+					Toast.makeText(MainActivity.this, "Sent setMarkerCenter", Toast.LENGTH_SHORT).show();
+				}
+			});
+            
 
-			final WebView contentWebview = (WebView) contentView;
 			final WebSettings webSettings = contentWebview.getSettings();
 			webSettings.setJavaScriptEnabled(true);
 
 			contentWebview.addJavascriptInterface(mainActivityJavascriptInterface, "MainActivityJavascriptInterface");
-			contentWebview.loadUrl("file:///android_asset/web/testmap.html");
+			contentWebview.loadUrl("file:///android_asset/web/main.html");
 		}
 
 	}
@@ -81,6 +94,10 @@ public class MainActivity extends Activity {
 		super.onPostCreate(savedInstanceState);
 	}
 	
+	private void sendSetMarkerCenter(final WebView contentWebview) {
+		contentWebview.loadUrl("javascript:setMarkerCenter()");
+	}
+
 	public class MainActivityJavascriptInterface {
 		@JavascriptInterface
 		public void updateCenter(final float lat, final float lng) {
