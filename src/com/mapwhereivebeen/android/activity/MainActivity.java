@@ -19,6 +19,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.mapwhereivebeen.android.R;
+import com.mapwhereivebeen.android.model.MapMarker;
+import com.mapwhereivebeen.android.model.UserMap;
+import com.mapwhereivebeen.android.util.Conca;
+import com.mapwhereivebeen.android.util.Utils;
+import com.mapwhereivebeen.android.web.WebClient;
 
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getName();
@@ -45,7 +50,11 @@ public class MainActivity extends Activity {
                     final View v, 
                     final ContextMenuInfo menuInfo) 
                 {
-                	((WebView)contentView).loadUrl("javascript:print_out('success !" + String.valueOf(System.nanoTime()) + "')");
+                	if (Utils.isDevelopment(getResources())) {
+                        ((WebView)contentView).loadUrl(
+                            "javascript:print_out('success !" + String.valueOf(System.nanoTime()) + "')"
+                        );
+                	}
                 }
             });
 
@@ -75,7 +84,33 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(final View v) {
 					sendSetMarkerCenter(contentWebview);
-					Toast.makeText(MainActivity.this, "Sent setMarkerCenter", Toast.LENGTH_SHORT).show();
+					
+					if (Utils.isDevelopment(getResources())) {
+                        Toast.makeText(MainActivity.this, "Sent setMarkerCenter", Toast.LENGTH_SHORT).show();
+					}
+					
+					final PointF currentCenter = atmFromJsCenter.get();
+					Utils.runAsync(new Runnable() {
+						@Override
+						public void run() {
+							PointF center = currentCenter;
+							final long startTimeNs = System.nanoTime();
+							final long timeoutTimeNs = startTimeNs + 5000000L;
+							while (center == null) {
+								if (System.nanoTime() >= timeoutTimeNs) {
+									return;
+								}
+								
+								try {
+									Thread.sleep(100L);
+								} catch (InterruptedException e) { }
+								
+								center = atmFromJsCenter.get();
+							}
+							
+							addMarkerCoordinatesToDatabase(center);
+						}
+					});
 				}
 			});
             
@@ -88,6 +123,22 @@ public class MainActivity extends Activity {
 		}
 
 	}
+	
+	private void addMarkerCoordinatesToDatabase(final PointF currentCenter) {
+		final MapMarker marker = new MapMarker();
+		final UserMap userMap = new UserMap();
+		userMap.setId(Long.valueOf(getResources().getInteger(R.dimen.dev_map_id)));
+		marker.setUserMap(userMap);
+		
+		marker.setLatitude((double) currentCenter.x);
+		marker.setLongitude((double) currentCenter.y);
+		
+		final WebClient webClient = new WebClient();
+		webClient.post(
+            Conca.t(Utils.getServerUrl(getResources()), getString(R.string.url_suffix_mapmarkers)),
+            marker
+        );
+	}	
 	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
