@@ -1,5 +1,12 @@
 package com.mapwhereivebeen.android.activity;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.annotation.SuppressLint;
@@ -31,15 +38,29 @@ public class MainActivity extends Activity {
 	private AtomicReference<PointF> atmLastTouchPoint = new AtomicReference<PointF>(new PointF(100, 100));
 	private AtomicReference<PointF> atmFromJsCenter = new AtomicReference<PointF>();
 	private MainActivityJavascriptInterface mainActivityJavascriptInterface = new MainActivityJavascriptInterface();
+	private String userMapIdentifier;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(final Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
 
+		if (savedInstanceState.containsKey(getString(R.string.key_user_map_identifier))) {
+			userMapIdentifier = savedInstanceState.getString(getString(R.string.key_user_map_identifier));
+			loadWebView();
+			
+		} else {
+			Utils.runAsync(new Runnable() {
+				@Override
+				public void run() {
+                    checkForExistingMap();
+				}
+			});
+		}
+		
 		final View contentView = findViewById(R.id.fullscreen_content);
 
 		if (contentView instanceof WebView) {
@@ -77,13 +98,13 @@ public class MainActivity extends Activity {
                 }
             });
             
-            final WebView contentWebview = (WebView) contentView;
+            final WebView contentWebView = (WebView) contentView;
             
             final Button btnMarker = (Button) findViewById(R.id.btn_marker);
             btnMarker.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(final View v) {
-					sendSetMarkerCenter(contentWebview);
+					sendSetMarkerCenter(contentWebView);
 					
 					if (Utils.isDevelopment(getResources())) {
                         Toast.makeText(MainActivity.this, "Sent setMarkerCenter", Toast.LENGTH_SHORT).show();
@@ -115,15 +136,71 @@ public class MainActivity extends Activity {
 			});
             
 
-			final WebSettings webSettings = contentWebview.getSettings();
-			webSettings.setJavaScriptEnabled(true);
-
-			contentWebview.addJavascriptInterface(mainActivityJavascriptInterface, "MainActivityJavascriptInterface");
-			contentWebview.loadUrl("file:///android_asset/web/main.html");
 		}
 
 	}
+
+	@SuppressLint("SetJavaScriptEnabled")
+	private void loadWebView() {
+		final WebView contentWebView = (WebView) findViewById(R.id.fullscreen_content);
+		final WebSettings webSettings = contentWebView.getSettings();
+		webSettings.setJavaScriptEnabled(true);
+
+		contentWebView.addJavascriptInterface(mainActivityJavascriptInterface, "MainActivityJavascriptInterface");
+		contentWebView.loadUrl("file:///android_asset/web/main.html");
+	}
 	
+	@Override
+	protected void onSaveInstanceState(final Bundle outState) {
+		if (userMapIdentifier != null && userMapIdentifier.length() > 0) {
+            outState.putString(getString(R.string.key_user_map_identifier), userMapIdentifier);
+		}
+		
+		super.onSaveInstanceState(outState);
+	}
+	
+	private void checkForExistingMap() {
+		final File installFile = new File(getFilesDir(), "INSTALLATION");
+		if (installFile.exists()) {
+			final Properties props = new Properties();
+			try {
+				props.loadFromXML(new FileInputStream(installFile));
+				
+			} catch (final Exception e) {
+				Log.e(TAG, "error reading properties", e);
+			}
+			
+			if (props.containsKey(getString(R.string.key_user_map_identifier))) {
+				userMapIdentifier = props.getProperty(getString(R.string.key_user_map_identifier));
+			}
+			
+		} else {
+			final WebClient client = new WebClient();
+			userMapIdentifier = client.getJSONObject(Conca.t(
+                Utils.getServerUrl(
+                    getResources()), 
+                    getString(R.string.url_suffix_usermaps),
+                    getString(R.string.url_suffix_createmap)
+            ));
+			
+			final Properties props = new Properties();
+			props.put(getString(R.string.key_user_map_identifier), userMapIdentifier);
+			try {
+				props.storeToXML(new FileOutputStream(installFile), "");
+				
+			} catch (final Exception e) {
+				Log.e(TAG, "error storing props", e);
+			}
+			
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					loadWebView();
+				}
+			});
+		}
+	}
+
 	private void addMarkerCoordinatesToDatabase(final PointF currentCenter) {
 		final MapMarker marker = new MapMarker();
 		final UserMap userMap = new UserMap();
