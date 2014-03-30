@@ -13,11 +13,6 @@ Main.prototype.init = function() {
     this.map = L.mapbox.map(this.mapContainerId, this.mapName);
     this.map.setView(this.latLngCenter, this.zoom);
     
-    thar = this;
-    this.map.on('mousedown', function(e) {
-    	thar.updateCenterAndroid();
-    });
-    
     MainActivityJavascriptInterface.loadMapMarkers();
 } 
 
@@ -25,9 +20,7 @@ Main.prototype.addCenterCoordinatesToDatabase = function() {
 	if (this.enableAndroid) {
         MainActivityJavascriptInterface.addCoordinatesToDatabase(this.currentCenter.lat, this.currentCenter.lng);
         
-	} else {
-		print_out('current loc: ' + this.currentCenter);
-	}
+	} 
 }
 
 Main.prototype.addMapMarker = function(markerJson) {
@@ -60,7 +53,3 @@ Main.prototype.addMarkerCenter = function() {
 	
 	this.addCenterCoordinatesToDatabase();
 }
-
-function print_out(txt) {
-    $('#p-output').text(txt);
-} 
