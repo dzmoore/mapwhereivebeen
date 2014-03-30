@@ -4,7 +4,7 @@
     <string name="app_name">mapwhereivebeen</string>
     <string name="btn_txt_marker">I\'ve Been Here</string>
     <item type="bool" name="is_production" format="boolean">false</item>
-    <string name="dev_server_url">http://192.168.1.7:8080/server</string>
+    <string name="dev_server_url">http://192.168.1.7:8080/mwib-server</string>
     <string name="prod_server_url">http://</string>
     <string name="url_suffix_usermaps">/usermaps</string>
     <string name="url_suffix_mapmarkers">/mapmarkers</string>
