@@ -21,11 +21,9 @@ Main.prototype.init = function() {
     MainActivityJavascriptInterface.loadMapMarkers();
 } 
 
-Main.prototype.updateCenterAndroid = function() {
-    this.currentCenter = this.map.getCenter();
-    
+Main.prototype.addCenterCoordinatesToDatabase = function() {
 	if (this.enableAndroid) {
-        MainActivityJavascriptInterface.updateCenter(this.currentCenter.lat, this.currentCenter.lng);
+        MainActivityJavascriptInterface.addCoordinatesToDatabase(this.currentCenter.lat, this.currentCenter.lng);
         
 	} else {
 		print_out('current loc: ' + this.currentCenter);
@@ -36,10 +34,10 @@ Main.prototype.addMapMarker = function(markerJson) {
 	L.mapbox.featureLayer(markerJson).addTo(this.map);
 }
 
-Main.prototype.setMarkerCenter = function() {
-	thar = this;
-	this.updateCenterAndroid();
+Main.prototype.addMarkerCenter = function() {
+	this.currentCenter = this.map.getCenter();
 	
+	thar = this;
 	L.mapbox.featureLayer({
 	    // this feature is in the GeoJSON format: see geojson.org
 	    // for the full specification
@@ -59,6 +57,8 @@ Main.prototype.setMarkerCenter = function() {
 	        'marker-color': '#f0a'
 	    }
 	}).addTo(this.map);
+	
+	this.addCenterCoordinatesToDatabase();
 }
 
 function print_out(txt) {

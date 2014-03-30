@@ -39,7 +39,6 @@ public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getName();
 	
 	private AtomicReference<PointF> atmLastTouchPoint = new AtomicReference<PointF>(new PointF(100, 100));
-	private AtomicReference<PointF> atmFromJsCenter = new AtomicReference<PointF>();
 	private MainActivityJavascriptInterface mainActivityJavascriptInterface = new MainActivityJavascriptInterface();
 	private String userMapIdentifier;
 	private ArrayList<MapMarker> mapMarkers;
@@ -105,29 +104,6 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(final View v) {
 					sendSetMarkerCenter(contentWebView);
-					
-					final PointF currentCenter = atmFromJsCenter.get();
-					Utils.runAsync(new Runnable() {
-						@Override
-						public void run() {
-							PointF center = currentCenter;
-							final long startTimeNs = System.nanoTime();
-							final long timeoutTimeNs = startTimeNs + 5000000L;
-							while (center == null) {
-								if (System.nanoTime() >= timeoutTimeNs) {
-									return;
-								}
-								
-								try {
-									Thread.sleep(100L);
-								} catch (InterruptedException e) { }
-								
-								center = atmFromJsCenter.get();
-							}
-							
-							addMarkerCoordinatesToDatabase(center);
-						}
-					});
 				}
 			});
             
@@ -214,7 +190,7 @@ public class MainActivity extends Activity {
 		});
 	}
 
-	private void addMarkerCoordinatesToDatabase(final PointF currentCenter) {
+	private void addCoordinatesToDatabase(final PointF currentCenter) {
 		final MapMarker marker = new MapMarker();
 		final UserMap userMap = new UserMap();
 		userMap.setMapIdentifier(userMapIdentifier);
@@ -236,16 +212,19 @@ public class MainActivity extends Activity {
 	}
 	
 	private void sendSetMarkerCenter(final WebView contentWebview) {
-		contentWebview.loadUrl("javascript:androidSetMarkerCenter()");
+		contentWebview.loadUrl("javascript:androidAddMarkerCenter()");
 	}
 
 	public class MainActivityJavascriptInterface {
 		@JavascriptInterface
-		public void updateCenter(final float lat, final float lng) {
-			final PointF p = new PointF(lat, lng);
-			atmFromJsCenter.set(p);
+		public void addCoordinatesToDatabase(final float lat, final float lng) {
+			Log.d(TAG, Conca.t(
+                "addMarkerCoordinatesToDatabase lat/lon: [", 
+                String.valueOf(lat), ", ", 
+                String.valueOf(lng), "]"
+            ));
 			
-			Log.d(TAG, "updated lat/lon: " + String.valueOf(p));
+			MainActivity.this.addCoordinatesToDatabase(new PointF(lat, lng));
 		}
 		
 		@JavascriptInterface
