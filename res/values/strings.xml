@@ -8,5 +8,7 @@
     <string name="prod_server_url">http://</string>
     <string name="url_suffix_usermaps">/usermaps</string>
     <string name="url_suffix_mapmarkers">/mapmarkers</string>
+    <string name="url_suffix_createmap">/createmap</string>
     <item type="dimen" format="integer" name="dev_map_id">1</item>
+    <string name="key_user_map_identifier">userMapIdentifier</string>
 </resources>

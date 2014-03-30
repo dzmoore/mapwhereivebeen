@@ -26,14 +26,7 @@
     
     var m = new Main('map', 'dzmoore.hh7ibp3a', L.latLng(40, -74.50), 9, enableAndroid);
     
-    if (enableAndroid) {
-/*         $('#output').hide(); */
-        $('#output').click(function() {
-            androidSetMarkerCenter();
-            $('#p-output').text('set marker to: ' + m.currentCenter);
-        });
-        
-    } else {    
+    if (!enabledAndroid) {
         $('#output').click(function() {
         	androidSetMarkerCenter();
         	$('#p-output').text('set marker to: ' + m.currentCenter);
