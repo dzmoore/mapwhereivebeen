@@ -1,6 +1,10 @@
 package com.mapwhereivebeen.android.model;
 
-public class MapMarker {
+import java.io.Serializable;
+
+public class MapMarker implements Serializable {
+	private static final long serialVersionUID = 2238756755756270368L;
+	
 	private Long id;
 	private Integer version;
 	private Double longitude;
