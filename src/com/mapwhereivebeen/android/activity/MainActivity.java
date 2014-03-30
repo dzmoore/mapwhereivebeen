@@ -2,10 +2,12 @@ package com.mapwhereivebeen.android.activity;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.InvalidPropertiesFormatException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -14,8 +16,6 @@ import android.app.Activity;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -23,9 +23,12 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mapwhereivebeen.android.R;
+import com.mapwhereivebeen.android.model.FeatureLayerMarker;
+import com.mapwhereivebeen.android.model.FeatureLayerMarker.Geometry;
 import com.mapwhereivebeen.android.model.MapMarker;
 import com.mapwhereivebeen.android.model.UserMap;
 import com.mapwhereivebeen.android.util.Conca;
@@ -39,6 +42,7 @@ public class MainActivity extends Activity {
 	private AtomicReference<PointF> atmFromJsCenter = new AtomicReference<PointF>();
 	private MainActivityJavascriptInterface mainActivityJavascriptInterface = new MainActivityJavascriptInterface();
 	private String userMapIdentifier;
+	private ArrayList<MapMarker> mapMarkers;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -48,10 +52,19 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.activity_main);
 
-		if (savedInstanceState != null
-            && savedInstanceState.containsKey(getString(R.string.key_user_map_identifier))) 
-		{
-			userMapIdentifier = savedInstanceState.getString(getString(R.string.key_user_map_identifier));
+		if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(getString(R.string.key_user_map_identifier))) {
+                userMapIdentifier = savedInstanceState.getString(getString(R.string.key_user_map_identifier));
+            }
+            
+            if (savedInstanceState.containsKey(getString(R.string.key_map_markers))) {
+            	@SuppressWarnings("unchecked")
+				final ArrayList<MapMarker> mapMarkersFromSave 
+            		= (ArrayList<MapMarker>) savedInstanceState.getSerializable(getString(R.string.key_map_markers));
+            	
+				mapMarkers = mapMarkersFromSave;
+            }
+            
 			loadWebView();
 			
 		} else {
@@ -139,6 +152,10 @@ public class MainActivity extends Activity {
             outState.putString(getString(R.string.key_user_map_identifier), userMapIdentifier);
 		}
 		
+		if (mapMarkers != null && mapMarkers.size() > 0) {
+            outState.putSerializable(getString(R.string.key_map_markers), mapMarkers);
+		}
+		
 		super.onSaveInstanceState(outState);
 	}
 	
@@ -173,10 +190,21 @@ public class MainActivity extends Activity {
 			} catch (final Exception e) {
 				Log.e(TAG, "error storing props", e);
 			}
-			
 		}
 		
 		Log.d(TAG, Conca.t("userMapIdentifier: ", userMapIdentifier));
+		
+		final WebClient client = new WebClient();
+		final String mapMarkersJson = client.getJSONObject(Conca.t(
+		    Utils.getServerUrl(getResources()),
+		    getString(R.string.url_suffix_mapmarkers),
+		    getString(R.string.url_suffix_bymapidentifier),
+		    userMapIdentifier
+        ));
+		
+		final List<MapMarker> mapMarkers = new Gson().fromJson(mapMarkersJson, new TypeToken<Collection<MapMarker>>(){}.getType());
+		this.mapMarkers = new ArrayList<MapMarker>(mapMarkers);
+		Log.d(TAG, Conca.t("mapMarkers: ", String.valueOf(mapMarkers)));
 		
 		runOnUiThread(new Runnable() {
 			@Override
@@ -218,6 +246,56 @@ public class MainActivity extends Activity {
 			atmFromJsCenter.set(p);
 			
 			Log.d(TAG, "updated lat/lon: " + String.valueOf(p));
+		}
+		
+		@JavascriptInterface
+		public void loadMapMarkers() {
+			if (mapMarkers != null) {
+				final WebView contentWebView = (WebView) findViewById(R.id.fullscreen_content);
+				for (final MapMarker eaMapMarker : mapMarkers) {
+					final FeatureLayerMarker featureLayerMarker = new FeatureLayerMarker();
+					featureLayerMarker.setType("Feature");
+					final Geometry geometry = new Geometry();
+					geometry.setType("Point");
+					geometry.setCoordinates(new double[] { eaMapMarker.getLongitude(), eaMapMarker.getLatitude() } );
+					featureLayerMarker.setGeometry(geometry);
+					
+					final Map<String, String> properties = new HashMap<String, String>();
+					properties.put("title", "marker");
+					properties.put("description", "description");
+					properties.put("marker-size", "large");
+					properties.put("marker-color", "#f0a");
+					featureLayerMarker.setProperties(properties);
+					
+//					contentWebView.loadUrl(Conca.t(
+//                        "javascript:androidAddMapMarker(",
+//                        new Gson().toJson(featureLayerMarker),
+//                        ")"
+//                    ));
+					
+					 try {
+//						final String encoded = URLEncoder.encode(new Gson().toJson(featureLayerMarker), "UTF-8");
+//						Log.d(TAG, Conca.t("encoded: ", encoded));
+						 
+						final String mapMarkerJson = new Gson().toJson(featureLayerMarker);
+						Log.d(TAG, Conca.t("mapMarkerJson: ", mapMarkerJson));
+						
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								contentWebView.loadUrl(Conca.t(
+                                    "javascript:androidAddMapMarker(",
+                                    mapMarkerJson,
+                                    ")"
+                                ));
+							}
+						}); 
+					} catch (final Exception e) {
+						Log.e(TAG, "encoding error", e);
+					}
+					 
+				}
+			}
 		}
 	}
 

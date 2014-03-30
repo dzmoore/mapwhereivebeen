@@ -17,6 +17,8 @@ Main.prototype.init = function() {
     this.map.on('mousedown', function(e) {
     	thar.updateCenterAndroid();
     });
+    
+    MainActivityJavascriptInterface.loadMapMarkers();
 } 
 
 Main.prototype.updateCenterAndroid = function() {
@@ -28,6 +30,10 @@ Main.prototype.updateCenterAndroid = function() {
 	} else {
 		print_out('current loc: ' + this.currentCenter);
 	}
+}
+
+Main.prototype.addMapMarker = function(markerJson) {
+	L.mapbox.featureLayer(markerJson).addTo(this.map);
 }
 
 Main.prototype.setMarkerCenter = function() {

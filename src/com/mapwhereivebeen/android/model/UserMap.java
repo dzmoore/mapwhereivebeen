@@ -1,6 +1,10 @@
 package com.mapwhereivebeen.android.model;
 
-public class UserMap {
+import java.io.Serializable;
+
+public class UserMap implements Serializable {
+	private static final long serialVersionUID = 5635344741374986857L;
+	
 	private Long id;
 	private String mapIdentifier;
 	private Integer version;
