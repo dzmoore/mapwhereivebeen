@@ -2,7 +2,13 @@
 <resources>
 
     <string name="app_name">mapwhereivebeen</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-
+    <string name="btn_txt_marker">I\'ve Been Here</string>
+    <item type="bool" name="is_production" format="boolean">false</item>
+    <string name="dev_server_url">http://192.168.1.7:8080/mwib-server</string>
+    <string name="prod_server_url">http://</string>
+    <string name="url_suffix_usermaps">/usermaps</string>
+    <string name="url_suffix_mapmarkers">/mapmarkers</string>
+    <string name="url_suffix_createmap">/createmap</string>
+    <item type="dimen" format="integer" name="dev_map_id">1</item>
+    <string name="key_user_map_identifier">userMapIdentifier</string>
 </resources>

@@ -13,4 +13,11 @@
         android:gravity="center"
         android:keepScreenOn="true" />
 
+    <Button
+        android:id="@+id/btn_marker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:text="@string/btn_txt_marker" />
+
 </FrameLayout>

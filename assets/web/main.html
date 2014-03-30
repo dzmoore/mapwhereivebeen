@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Map Where I've Been</title>
+
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.js'></script>
+<script src='../js/jquery-2.1.0.min.js'></script>
+<script src='../js/main.js'></script>
+<!-- <script src='../js/mapbox.js'></script> -->
+
+<!-- <link href='../css/mapbox.css' rel='stylesheet'/> -->
+<link href='../css/main.css' rel='stylesheet'/>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.css' rel='stylesheet' />
+</head>
+<body>
+<div id='output'>
+    <p id='p-output'></p>
+</div> 
+<div id='map'></div>
+<div id="crosshairs" class='center-40x40'><img src="../img/crosshairs.png"></img></div> 
+
+<script type="text/javascript">
+    var enableAndroid = true;
+    
+    var m = new Main('map', 'dzmoore.hh7ibp3a', L.latLng(40, -74.50), 9, enableAndroid);
+    
+    if (!enableAndroid) {
+        $('#output').click(function() {
+        	androidSetMarkerCenter();
+        	$('#p-output').text('set marker to: ' + m.currentCenter);
+        });
+    }
+    
+
+    m.init();
+    
+    function androidSetMarkerCenter() {
+        m.setMarkerCenter();
+    }
+</script>
+
+</body>
+</html>
