@@ -48,7 +48,9 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.activity_main);
 
-		if (savedInstanceState.containsKey(getString(R.string.key_user_map_identifier))) {
+		if (savedInstanceState != null
+            && savedInstanceState.containsKey(getString(R.string.key_user_map_identifier))) 
+		{
 			userMapIdentifier = savedInstanceState.getString(getString(R.string.key_user_map_identifier));
 			loadWebView();
 			
@@ -64,21 +66,6 @@ public class MainActivity extends Activity {
 		final View contentView = findViewById(R.id.fullscreen_content);
 
 		if (contentView instanceof WebView) {
-            contentView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-                @Override
-                public void onCreateContextMenu(
-                    final ContextMenu menu,
-                    final View v, 
-                    final ContextMenuInfo menuInfo) 
-                {
-                	if (Utils.isDevelopment(getResources())) {
-                        ((WebView)contentView).loadUrl(
-                            "javascript:print_out('success !" + String.valueOf(System.nanoTime()) + "')"
-                        );
-                	}
-                }
-            });
-
             contentView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(final View v, final MotionEvent event) {
@@ -105,10 +92,6 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(final View v) {
 					sendSetMarkerCenter(contentWebView);
-					
-					if (Utils.isDevelopment(getResources())) {
-                        Toast.makeText(MainActivity.this, "Sent setMarkerCenter", Toast.LENGTH_SHORT).show();
-					}
 					
 					final PointF currentCenter = atmFromJsCenter.get();
 					Utils.runAsync(new Runnable() {
@@ -177,10 +160,9 @@ public class MainActivity extends Activity {
 		} else {
 			final WebClient client = new WebClient();
 			userMapIdentifier = client.getJSONObject(Conca.t(
-                Utils.getServerUrl(
-                    getResources()), 
-                    getString(R.string.url_suffix_usermaps),
-                    getString(R.string.url_suffix_createmap)
+                Utils.getServerUrl(getResources()), 
+                getString(R.string.url_suffix_usermaps),
+                getString(R.string.url_suffix_createmap)
             ));
 			
 			final Properties props = new Properties();
@@ -192,19 +174,22 @@ public class MainActivity extends Activity {
 				Log.e(TAG, "error storing props", e);
 			}
 			
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					loadWebView();
-				}
-			});
 		}
+		
+		Log.d(TAG, Conca.t("userMapIdentifier: ", userMapIdentifier));
+		
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				loadWebView();
+			}
+		});
 	}
 
 	private void addMarkerCoordinatesToDatabase(final PointF currentCenter) {
 		final MapMarker marker = new MapMarker();
 		final UserMap userMap = new UserMap();
-		userMap.setId(Long.valueOf(getResources().getInteger(R.dimen.dev_map_id)));
+		userMap.setMapIdentifier(userMapIdentifier);
 		marker.setUserMap(userMap);
 		
 		marker.setLatitude((double) currentCenter.x);
