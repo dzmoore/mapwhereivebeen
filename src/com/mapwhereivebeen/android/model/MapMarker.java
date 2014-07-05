@@ -10,6 +10,9 @@ public class MapMarker implements Serializable {
 	private Double longitude;
 	private Double latitude;
 	private UserMap userMap;
+	private String title;
+	private String description;
+	private boolean active;
 	
 	public Long getId() {
 		return id;
@@ -42,6 +45,24 @@ public class MapMarker implements Serializable {
 	public void setUserMap(UserMap userMap) {
 		this.userMap = userMap;
 	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -55,9 +76,14 @@ public class MapMarker implements Serializable {
 		builder.append(latitude);
 		builder.append(", userMap=");
 		builder.append(userMap);
+		builder.append(", title=");
+		builder.append(title);
+		builder.append(", description=");
+		builder.append(description);
+		builder.append(", active=");
+		builder.append(active);
 		builder.append("]");
 		return builder.toString();
 	}
-	
 	
 }

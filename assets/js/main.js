@@ -27,7 +27,7 @@ Main.prototype.addMapMarker = function(markerJson) {
 	L.mapbox.featureLayer(markerJson).addTo(this.map);
 }
 
-Main.prototype.addMarkerCenter = function() {
+Main.prototype.addMarkerCenter = function(markerId, markerTitle, markerDescription) {
 	this.currentCenter = this.map.getCenter();
 	
 	thar = this;
@@ -42,14 +42,21 @@ Main.prototype.addMarkerCenter = function() {
 	        coordinates: [thar.currentCenter.lng, thar.currentCenter.lat]
 	    },
 	    properties: {
-	        title: 'marker',
-	        description: 'description',
+	        title: markerTitle,
+	        description: markerDescription,
 	        // one can customize markers by adding simplestyle properties
 	        // http://mapbox.com/developers/simplestyle/
 	        'marker-size': 'large',
 	        'marker-color': '#f0a'
 	    }
-	}).addTo(this.map);
+	})
+	.bindPopup(
+	    "<div class='marker-popup'>\
+	        <b>" + markerTitle + "</b><br/>\
+	        <div class='marker-descr'>" + markerDescription + "</div>\
+	    </div>"
+	)
+	.addTo(this.map);
 	
 	this.addCenterCoordinatesToDatabase();
 }

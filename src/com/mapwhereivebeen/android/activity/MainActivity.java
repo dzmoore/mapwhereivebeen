@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
             btnMarker.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(final View v) {
-					sendSetMarkerCenter(contentWebView);
+					sendSetMarkerCenter(contentWebView, 1, "A Title", "A Description");
 				}
 			});
             
@@ -211,8 +211,20 @@ public class MainActivity extends Activity {
 		super.onPostCreate(savedInstanceState);
 	}
 	
-	private void sendSetMarkerCenter(final WebView contentWebview) {
-		contentWebview.loadUrl("javascript:androidAddMarkerCenter()");
+	private void sendSetMarkerCenter(
+        final WebView contentWebview, 
+        final long markerId, 
+        final String markerTitle, 
+        final String markerDesc) 
+	{
+		contentWebview.loadUrl(Conca.t(
+            "javascript:androidAddMarkerCenter('",
+            String.valueOf(markerId),
+            "','",
+            markerTitle, "', '",
+            markerDesc, "')"
+        ));
+            
 	}
 
 	public class MainActivityJavascriptInterface {
